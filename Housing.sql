@@ -1,8 +1,9 @@
--- claeaning data
+-- cleaning data
 SELECT *
 FROM Housing
 
 -- standardize date format
+-- convert SaleDate into a clean format
 SELECT SaleDateConverted,CONVERT(Date,SaleDate)
 FROM Housing
 
@@ -15,7 +16,8 @@ ADD SaleDateConverted Date;
 UPDATE Housing
 SET SaleDateConverted = CONVERT(Date,SaleDate)
 
---propert Address data
+	
+-- populate missing property address using matching ParcelID
 SELECT *
 FROM Housing
 --WHERE PropertyAddress is null
@@ -36,8 +38,8 @@ JOIN Housing h2
 	AND h1.[UniqueID] <> h2.[UniqueID]
 WHERE h1.PropertyAddress is null
 
--- breaking out address into individual columns
-
+	
+-- split property address into address and city
 SELECT PropertyAddress
 From Housing
 
@@ -60,13 +62,15 @@ SET PropertySplitCity = SUBSTRING(PropertyAddress, CHARINDEX(',', PropertyAddres
 SELECT *
 FROM Housing
 
+
+-- split owner address into address, city and state
 SELECT OwnerAddress
 FROM Housing
 
 SELECT 
-PARSENAME(REPLACE(OwnerAddress, ',' ,'.'), 3),
-PARSENAME(REPLACE(OwnerAddress, ',' ,'.'), 2),
-PARSENAME(REPLACE(OwnerAddress, ',' ,'.'), 1)
+	PARSENAME(REPLACE(OwnerAddress, ',' ,'.'), 3),
+	PARSENAME(REPLACE(OwnerAddress, ',' ,'.'), 2),
+	PARSENAME(REPLACE(OwnerAddress, ',' ,'.'), 1)
 
 FROM Housing
 
@@ -85,7 +89,7 @@ ADD OwnerState Nvarchar(50);
 UPDATE Housing
 SET OwnerState = PARSENAME(REPLACE(OwnerAddress, ',' ,'.'), 1)
 
--- chanfe y and n to tes and no 
+-- change y and n to yes and no
 
 SELECT DISTINCT(SoldAsVacant)
 FROM Housing
@@ -106,7 +110,6 @@ SET SoldAsVacant = CASE WHEN SoldAsVacant = 'Y' THEN 'Yes'
 
 -- remove duplicates 
 -- cte
-
 WITH RowNumCTE AS(
 SELECT *,
 	ROW_NUMBER() OVER(
@@ -125,7 +128,7 @@ WHERE row_num > 1
 ORDER BY PropertyAddress
 
 
---delete columns
+-- remove unused columns
 SELECT *
 FROM Housing
 
